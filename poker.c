@@ -10,6 +10,7 @@
 #define FLOP_SIZE 3
 #define TURN_SIZE 1
 #define RIVER_SIZE 1
+#define LOWEST_CARD 2
 
 
 #ifndef assert 
@@ -17,8 +18,8 @@
 #endif
 
 typedef enum {Clubs, Diamonds, Spades, Hearts} Suit; // mostly for comparing hands
-typedef enum {Joker=11, Queen, King, Ace} Value; 
-typedef enum {high, pair = 14, two_pair, three_of_a_kind, straight, flush, full_house, four_of_a_kind, straight_flush, royal_flush} Hand;
+typedef enum {Joker=11, Queen, King, Ace} Value; // Ace high will be default
+typedef enum {high, pair = 15, two_pair, three_of_a_kind, straight, flush, full_house, four_of_a_kind, straight_flush, royal_flush} Hand;
 
 typedef struct card // card contains a suit and a value 
 {
@@ -47,13 +48,13 @@ void initialize_deck(Deck* deck) {
   {
     deck->card_list[i] = (Card*) malloc(sizeof(Card)); // adds each value suit pair to the stack
     deck->card_list[i]->suit = i % NUM_SUITS; 
-    deck->card_list[i]->value = i % NUM_VALUES;
+    deck->card_list[i]->value = 2 + i % NUM_VALUES;
   }
 }
 
 // shuffle_deck randomizes the deck by swapping each index with a random index
 void shuffle_deck(Deck* deck) {
-  srand(time(NULL));
+  srand(time(NULL)); // Sets a random seed using time
   deck->index = 0; // When we shuffle we want to go back to using the top of the card_list
   Card* temp = (Card*) malloc(sizeof(Card));
   int random_index;
@@ -128,8 +129,8 @@ int check_flush(Card* hand[HAND_SIZE])
 
 // check for straight
 int check_straight(Card* hand[HAND_SIZE]) {
-  Card* hashmap[NUM_VALUES];
-  for (int i = 0; i < NUM_VALUES; i++)
+  Card* hashmap[NUM_VALUES+LOWEST_CARD];
+  for (int i = 0; i < NUM_VALUES+LOWEST_CARD; i++)
   {
     hashmap[i] = NULL;
   }
@@ -137,12 +138,16 @@ int check_straight(Card* hand[HAND_SIZE]) {
   {
     hashmap[hand[i]->value] = hand[i];
   }
-  int start_index;
-  for (int i = 0; i < NUM_VALUES; i++)
+  int start_index = 0;
+  for (int i = 0; i < NUM_VALUES+LOWEST_CARD; i++)
   {
-    if (hashmap[i] != NULL) start_index = i;
+    if (hashmap[i] != NULL) 
+    {
+      start_index = i;
+      break;
+    }
   }
-  for (int i = start_index; i < NUM_VALUES; i++)
+  for (int i = start_index; i < start_index+HAND_SIZE; i++)
   {
     if (hashmap[i] == NULL)
     {
@@ -155,10 +160,10 @@ int check_straight(Card* hand[HAND_SIZE]) {
 // check for pair / three / four
 
 int check_multi(Card* hand[HAND_SIZE]) {
-  int hashmap[NUM_VALUES];
+  int hashmap[NUM_VALUES + LOWEST_CARD];
   int count = 0;
   int pair_count = 0;
-  for (int i = 0; i < NUM_VALUES; i++)
+  for (int i = 0; i < NUM_VALUES + LOWEST_CARD; i++)
   {
     hashmap[i] = 0;
   }
@@ -166,7 +171,7 @@ int check_multi(Card* hand[HAND_SIZE]) {
   {
     hashmap[hand[i]->value]++;
   }
-  for (int i = 0; i < NUM_VALUES; i++)
+  for (int i = 0; i < NUM_VALUES + LOWEST_CARD; i++)
   {
     if (hashmap[i] > 1)
     {
@@ -224,30 +229,50 @@ int evaluate_hand(Card* hand[HAND_SIZE]) {
 //TODO set hand will set a players hand as the highest scoring hand
 void set_hand(Player* player, Card* table[HAND_SIZE]){
   int highest = 0;
-  Card* cur_hand[HAND_SIZE];
-  Card* highest_hand[HAND_SIZE];
-  cur_hand[0] = player->pocket[0];
-  cur_hand[1] = player->pocket[1];
-  for (int i = 0; i < HAND_SIZE; i++)
+  Card* cards[HAND_SIZE+POCKET_SIZE];
+  for (int i = 0; i < HAND_SIZE+POCKET_SIZE; i++)
   {
-    cur_hand[2] = table[i];
-    for (int j = 0; j < HAND_SIZE; j++)
+    if (i < 2) {
+      cards[i] = player->pocket[i];
+    } else {
+      cards[i] = table[i];
+    }
+  }
+  Card* cur_hand[HAND_SIZE];
+  for (int a = 0; a < HAND_SIZE; a++)
+  {
+    cur_hand[0] = cards[a];
+    for (int b = 0; b < HAND_SIZE; b++)
     {
-      if (j != i)
+      if (b != a)
       {
-        cur_hand[3] = table[j];
-        for (int x = 0; x < HAND_SIZE; x++)
+        cur_hand[1] = cards[b];
+        for (int c = 0; c < HAND_SIZE; c++)
         {
-          if (x!=j && x!=i)
+          if (c!=b && c!=a)
           {
-            cur_hand[4] = table[x];
-            if (evaluate_hand(cur_hand) > highest)
+            cur_hand[2] = cards[c];
+            for (int d = 0; d < HAND_SIZE; d++)
             {
-              
-              for (int z = 0; z < HAND_SIZE; z++)
+              if (d!=c && d!=b && d!=a)
               {
-                player->hand[z] = (Card*) malloc(sizeof(Card));
-                player->hand[z] = cur_hand[z];
+                cur_hand[3] = cards[d];
+                for (int e = 0; e < HAND_SIZE; e++)
+                {
+                  if (e!=d && e!=c && e!= b && e!=a)
+                  {
+                    cur_hand[4] = cards[e];
+                    if (evaluate_hand(cur_hand) > highest)
+                    {
+                      for (int z = 0; z < HAND_SIZE; z++)
+                      {
+                        player->hand[z] = (Card*) malloc(sizeof(Card));
+                        player->hand[z] = cur_hand[z];
+                      }
+                      highest = evaluate_hand(cur_hand);
+                    }
+                  }
+                }
               }
             }
           }
@@ -284,26 +309,31 @@ void test_deck() {
 void test_evaluations() {
   Deck* deck = (Deck*) malloc(sizeof(Deck)); //create deck 
   Player* player = (Player*) malloc(sizeof(Player)); // create player
+  Player* computer = (Player*) malloc(sizeof(Player)); // create computer
   initialize_deck(deck);
-  
-  for (int i = 0; i < DECK_SIZE; i++)
+  for (int i = 0; i < DECK_SIZE ;i++)
   {
-    printf("Initial Deck: %d, %d\n", deck->card_list[i]->suit, deck->card_list[i]->value);
+    printf("Deck: %d, %d\n", deck->card_list[i]->suit, deck->card_list[i]->value);
   }
 
   shuffle_deck(deck);
 
-  for (int i = 0; i < DECK_SIZE; i++)
+  for (int i = 0; i < DECK_SIZE ;i++)
   {
-    printf("Shuffled Deck: %d, %d\n", deck->card_list[i]->suit, deck->card_list[i]->value);
+    printf("shuffled deck: %d, %d\n", deck->card_list[i]->suit, deck->card_list[i]->value);
   }
 
-   
   deal_cards(player, deck);
+  deal_cards(computer, deck);
+
   for (int i = 0; i < POCKET_SIZE; i++)
   {
-    assert(player->pocket[i] != NULL);
-    printf("Player Hand: %d %d\n", player->pocket[i]->suit, player->pocket[i]->value);
+    printf("Player pocket: %d, %d\n", player->pocket[i]->suit, player->pocket[i]->value);
+  }
+
+  for (int i = 0; i < POCKET_SIZE; i++)
+  {
+    printf("Computer pocket: %d, %d\n", computer->pocket[i]->suit, computer->pocket[i]->value);
   }
 
   Card* table[HAND_SIZE];
@@ -321,12 +351,18 @@ void test_evaluations() {
   }
   
   set_hand(player, table);
+  set_hand(computer, table);
   for (int i = 0; i < HAND_SIZE; i++)
   {
-    printf("Best Hand: %d, %d\n", player->hand[i]->suit, player->hand[i]->value);
+    printf("Player Hand: %d, %d\n", player->hand[i]->suit, player->hand[i]->value);
   }
-
-  printf("Final score: %d\n", evaluate_hand(player->hand));
+  for (int i = 0; i < HAND_SIZE; i++)
+  {
+    printf("Computer Hand: %d, %d\n", computer->hand[i]->suit, computer->hand[i]->value);
+  }
+  printf("Final Player score: %d\n", evaluate_hand(player->hand));
+  printf("Final Computer score: %d\n", evaluate_hand(computer->hand));
+  
 }
 
 int main() {
