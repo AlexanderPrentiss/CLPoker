@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include<time.h>
 
 #define DECK_SIZE 52 // defines all sizes so no hard-coding
 #define NUM_SUITS 4
@@ -17,7 +18,7 @@
 
 typedef enum {Clubs, Diamonds, Spades, Hearts} Suit; // mostly for comparing hands
 typedef enum {Joker=11, Queen, King, Ace} Value; 
-typedef enum {high, pair = 14, three_of_a_kind, straight, flush, full_house, four_of_a_kind, straight_flush, royal_flush} Hand;
+typedef enum {high, pair = 14, two_pair, three_of_a_kind, straight, flush, full_house, four_of_a_kind, straight_flush, royal_flush} Hand;
 
 typedef struct card // card contains a suit and a value 
 {
@@ -52,6 +53,7 @@ void initialize_deck(Deck* deck) {
 
 // shuffle_deck randomizes the deck by swapping each index with a random index
 void shuffle_deck(Deck* deck) {
+  srand(time(NULL));
   deck->index = 0; // When we shuffle we want to go back to using the top of the card_list
   Card* temp = (Card*) malloc(sizeof(Card));
   int random_index;
@@ -155,6 +157,7 @@ int check_straight(Card* hand[HAND_SIZE]) {
 int check_multi(Card* hand[HAND_SIZE]) {
   int hashmap[NUM_VALUES];
   int count = 0;
+  int pair_count = 0;
   for (int i = 0; i < NUM_VALUES; i++)
   {
     hashmap[i] = 0;
@@ -167,9 +170,13 @@ int check_multi(Card* hand[HAND_SIZE]) {
   {
     if (hashmap[i] > 1)
     {
+      if (hashmap[i] == 2) {
+        pair_count++;
+      }
       count += hashmap[i];
     }
   }
+  if (pair_count > 1) return 6;
   return count;
 }
 
@@ -205,6 +212,9 @@ int evaluate_hand(Card* hand[HAND_SIZE]) {
         break;
       case 5:
         return full_house;
+        break;
+      case 6:
+        return two_pair;
         break;
     }
   }
@@ -275,8 +285,20 @@ void test_evaluations() {
   Deck* deck = (Deck*) malloc(sizeof(Deck)); //create deck 
   Player* player = (Player*) malloc(sizeof(Player)); // create player
   initialize_deck(deck);
-  shuffle_deck(deck);
   
+  for (int i = 0; i < DECK_SIZE; i++)
+  {
+    printf("Initial Deck: %d, %d\n", deck->card_list[i]->suit, deck->card_list[i]->value);
+  }
+
+  shuffle_deck(deck);
+
+  for (int i = 0; i < DECK_SIZE; i++)
+  {
+    printf("Shuffled Deck: %d, %d\n", deck->card_list[i]->suit, deck->card_list[i]->value);
+  }
+
+   
   deal_cards(player, deck);
   for (int i = 0; i < POCKET_SIZE; i++)
   {
