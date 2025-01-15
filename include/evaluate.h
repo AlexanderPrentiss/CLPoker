@@ -11,7 +11,7 @@ int check_straight(Card* hand[HAND_SIZE]);
 
 int* check_multi(Card* hand[HAND_SIZE]);
 
-int check_highest(Card* hand[HAND_SIZE]);
+int check_highest(Card** hand, int count);
 
 // evaluate hand checks to see what score a hand will get
 int evaluate_hand(Card* hand[HAND_SIZE]); 

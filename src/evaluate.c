@@ -1,12 +1,12 @@
-#include<stdio.h>
 #include<stdlib.h>
 #include "deck.h"
 #include "evaluate.h"
+#include "preprocess.h"
 
 //check for flush
 int check_flush(Card* hand[HAND_SIZE])
 {
-  Suit test = hand[0]->suit; // set the suit to be the first card's suit
+  int test = hand[0]->suit; // set the suit to be the first card's suit
   for (int i = 1; i < HAND_SIZE; i++) // loop through every card
   {
     if (hand[i]->suit != test) // if any card is not of the same suit there is no flush
@@ -83,9 +83,9 @@ int* check_multi(Card* hand[HAND_SIZE]) {
   return output;
 }
 
-int check_highest(Card* hand[HAND_SIZE]){
+int check_highest(Card** hand, int count){
   int highest = hand[0]->value;
-  for (int i = 1; i < HAND_SIZE; i++) // loop through hand to find the highest card
+  for (int i = 1; i < count; i++) // loop through hand to find the highest card
   {
     if (hand[i]->value > highest) highest = hand[i]->value;
   }
@@ -94,7 +94,7 @@ int check_highest(Card* hand[HAND_SIZE]){
 
 // evaluate hand checks to see what score a hand will get
 int evaluate_hand(Card* hand[HAND_SIZE]) { // use the data we get from the check functions to score the hand
-  if (check_flush(hand) && check_straight(hand) && check_highest(hand) == 14) return royal_flush; // if there is an ace and a straight flush; royal flush!
+  if (check_flush(hand) && check_straight(hand) && check_highest(hand, DECK_SIZE) == 14) return royal_flush; // if there is an ace and a straight flush; royal flush!
   else if (check_flush(hand) && check_straight(hand)) return straight_flush; // if there is a straight and a flush its a straight flush
   else if (check_flush(hand)) return flush; // check for straight
   else if (check_straight(hand)) return straight; // check for flush
@@ -103,7 +103,7 @@ int evaluate_hand(Card* hand[HAND_SIZE]) { // use the data we get from the check
     switch (check_multi(hand)[2])
     {
       case 0:
-        return check_highest(hand);
+        return check_highest(hand, HAND_SIZE);
         break;
       case 2:
         return pair;
@@ -122,5 +122,5 @@ int evaluate_hand(Card* hand[HAND_SIZE]) { // use the data we get from the check
         break;
     }
   }
-  return check_highest(hand); // If its nothing above just return the highest card
+  return check_highest(hand, HAND_SIZE); // If its nothing above just return the highest card
 }
