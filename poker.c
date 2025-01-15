@@ -202,7 +202,7 @@ int check_highest(Card* hand[HAND_SIZE]){
   return highest;
 }
 
-//TODO evaluate hand will check to see what score a hand will get
+// evaluate hand checks to see what score a hand will get
 int evaluate_hand(Card* hand[HAND_SIZE]) { // use the data we get from the check functions to score the hand
   if (check_flush(hand) && check_straight(hand) && check_highest(hand) == 14) return royal_flush; // if there is an ace and a straight flush; royal flush!
   else if (check_flush(hand) && check_straight(hand)) return straight_flush; // if there is a straight and a flush its a straight flush
@@ -314,7 +314,14 @@ Player* compare_hands(Player* playerA, Player* playerB)
 }
 
 
-//TODO destroy deck
+// destroy deck destroys every card in the deck, then destroys the deck
+void destroy_deck(Deck* deck) {
+  for (int i = 0; i < DECK_SIZE; i++)
+  {
+    free(deck->card_list[i]);
+  }
+  free(deck);
+}
 
 // Test : This will probably become the play hand function
 void test_evaluations() {
@@ -362,7 +369,9 @@ void test_evaluations() {
   } else {
     printf("its a tie\n");
   }
-  
+  destroy_deck(deck); 
+  free(player);
+  free(computer);
 }
 
 int main() {
