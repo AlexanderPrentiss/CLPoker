@@ -83,7 +83,7 @@ int* check_multi(Card* hand[HAND_SIZE]) {
   return output;
 }
 
-int check_highest(Card** hand, int count){
+int check_highest(Card** hand, int count){ 
   int highest = hand[0]->value;
   for (int i = 1; i < count; i++) // loop through hand to find the highest card
   {

@@ -158,7 +158,7 @@ void play_hand(Deck* deck, Player* player, Player* computer) {
   if (computer_bet < player_bet) {
     printf("Computer folds, Player wins!");
     player->balance+=pool;
-    exit(-1);
+    return;
   }
   printf("Computer bets: %d\n",computer_bet);
   if (computer_bet > player_bet) {
@@ -171,8 +171,9 @@ void play_hand(Deck* deck, Player* player, Player* computer) {
     } else {
       computer->balance+=pool;
       printf("Player folds, Computer wins!");
-      exit(-1);
+      return;
     }
+    free(response);
   }
 
   //DEALING THE FLOP
@@ -211,7 +212,7 @@ void play_hand(Deck* deck, Player* player, Player* computer) {
   if (computer_bet < player_bet) {
     printf("Computer folds, Player wins!");
     player->balance+=pool;
-    exit(-1);
+    return;
   }
   printf("Computer bets: %d\n",computer_bet);
   if (computer_bet > player_bet) {
@@ -224,8 +225,9 @@ void play_hand(Deck* deck, Player* player, Player* computer) {
     } else {
       computer->balance+=pool;
       printf("Player folds, Computer wins!");
-      exit(-1);
+      return;
     }
+    free(response);
   }
 
   //DEALING THE TURN
@@ -252,7 +254,7 @@ void play_hand(Deck* deck, Player* player, Player* computer) {
   if (computer_bet < player_bet) {
     printf("Computer folds, Player wins!");
     player->balance+=pool;
-    exit(-1);
+    return;
   }
   printf("Computer bets: %d\n",computer_bet);
   if (computer_bet > player_bet) {
@@ -265,8 +267,9 @@ void play_hand(Deck* deck, Player* player, Player* computer) {
     } else {
       computer->balance+=pool;
       printf("Player folds, Computer wins!");
-      exit(-1);
+      return;
     }
+    free(response);
   }
 
   //DEALING THE RIVER
@@ -296,7 +299,7 @@ void play_hand(Deck* deck, Player* player, Player* computer) {
   if (computer_bet < player_bet) {
     printf("Computer folds, Player wins!");
     player->balance+=pool;
-    exit(-1);
+    return;
   }
   printf("Computer bets: %d\n",computer_bet);
   if (computer_bet > player_bet) {
@@ -309,8 +312,9 @@ void play_hand(Deck* deck, Player* player, Player* computer) {
     } else {
       computer->balance+=pool;
       printf("Player folds, Computer wins!");
-      exit(-1);
+      return;
     }
+    free(response);
   }
 
   for (int i = 0; i < HAND_SIZE; i++)
@@ -347,9 +351,14 @@ int main() {
   computer->balance = 100;
 
   initialize_deck(deck); // initialize deck
-
-  play_hand(deck, player, computer);
-  printf("Player balance: %d\nComputer balance: %d\n", player->balance, computer->balance);
+  
+  char* play = (char*) malloc(sizeof(char)*3);
+  while (!strcmp(play, "yes")) {
+    play_hand(deck, player, computer);
+    printf("Player balance: %d\nComputer balance: %d\n", player->balance, computer->balance);
+    printf("Another hand (yes or no)?: ");
+    scanf("%s", play);
+  }
 
   destroy_deck(deck); 
   free(player);
