@@ -19,7 +19,26 @@ void rtrn_home() {
   printf("\e[u");
 }
 
+char dsply_value(int value) {
+  switch (value) {
+    case 11:
+      return 'J';
+      break;
+    case 12:
+      return 'Q';
+      break;
+    case 13:
+      return 'K';
+      break;
+    case 14:
+      return 'A';
+      break;
+  }
+  return 'E';
+}
+
 void draw_card(int posx, int posy, int suit, int value) {
+
   if (suit == 10) {
     printf("\e[%d;%df", posy, posx+1);
     for (int i = posx; i < posx + CARD_WIDTH-2; i++) printf("_");
@@ -55,6 +74,35 @@ void draw_card(int posx, int posy, int suit, int value) {
       suit_L = 'S';
       break;
   }
+  if (value > 10) {
+    char display = dsply_value(value);
+    printf("\e[%d;%df", posy, posx+1);
+    for (int i = posx; i < posx + CARD_WIDTH-2; i++) printf("_");
+
+    printf("\e[%d;%df/%c", posy+1, posx, display);
+    for (int i = 2; i < CARD_WIDTH-2;i++) printf(" ");
+    printf("%c\\", display);
+   
+    int off = 0;
+    for (int i = posy + 2; i < posy + CARD_HEIGHT; i++)
+    {
+      printf("\e[%d;%df|", i, posx);
+      for (int j = 1; j < CARD_WIDTH/2;j++) printf(" ");
+      if (i == posy + (CARD_HEIGHT + 1)/2) {
+        printf("%c", suit_L);
+        off = 1;
+      }
+      for (int j = posx + off; j < posx + CARD_WIDTH/2;j++) printf(" ");
+      off = 0;
+      printf("|");
+    }
+
+    printf("\e[%d;%df\\%c", posy + CARD_HEIGHT, posx, display);
+    for (int i = 2; i < CARD_WIDTH-2;i++) printf("_");
+    printf("%c/", display);
+    rtrn_home();
+    return;
+  }    
   int digits = 1;
   if (value/10 > 0) digits = 2;
   printf("\e[%d;%df", posy, posx+1);
