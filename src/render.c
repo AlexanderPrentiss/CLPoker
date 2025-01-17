@@ -1,15 +1,25 @@
 #include<stdio.h>
 #include "render.h"
 
-#define CARD_WIDTH 9
-#define CARD_HEIGHT 7
-
 void clr() {
   printf("\e[1J");
 }
 
-void draw_card(int posx, int posy, int suit, int value) {
+void clr_txt() {
+  rtrn_home();
+  printf("\e[0J");
+}
+
+void set_crsr_home(int posx, int posy) {
+  printf("\e[%d:%df", posy, posx);
   printf("\e[s");
+}
+
+void rtrn_home() {
+  printf("\e[u");
+}
+
+void draw_card(int posx, int posy, int suit, int value) {
   if (suit == 10) {
     printf("\e[%d;%df", posy, posx+1);
     for (int i = posx; i < posx + CARD_WIDTH-2; i++) printf("_");
@@ -27,7 +37,7 @@ void draw_card(int posx, int posy, int suit, int value) {
 
   printf("\e[%d;%df\\", posy + CARD_HEIGHT, posx);
   for (int i = 2; i < CARD_WIDTH;i++) printf("#");
-  printf("\e[u\n");
+  rtrn_home();
   return;
   }
   char suit_L;
@@ -71,6 +81,6 @@ void draw_card(int posx, int posy, int suit, int value) {
   printf("\e[%d;%df\\%d", posy + CARD_HEIGHT, posx, value);
   for (int i = 2; i < CARD_WIDTH-(2*digits);i++) printf("_");
   printf("%d/", value);
-  printf("\e[u\n");
+  rtrn_home();
 }
 

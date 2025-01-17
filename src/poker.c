@@ -113,7 +113,7 @@ int place_bet(Player* player, int amount) {
 
 int decide_bet(Player* computer, int last_bet, int eval) {
   int Threshold = 1 + rand() % (last_bet+1);
-  int roll = (last_bet + 1) * eval / last_bet;
+  int roll = (last_bet + 1) * eval / (last_bet + 1);
   if (roll > Threshold + (last_bet/4) && computer->balance > last_bet + (last_bet/4)) return place_bet(computer, last_bet+(last_bet/2));
   else if (roll >= Threshold) return place_bet(computer, last_bet);
   else return 0;
@@ -185,6 +185,7 @@ void play_hand(Deck* deck, Player* player, Player* computer) {
   draw_card(3, 10, table[0]->suit, table[0]->value);
   draw_card(13, 10, table[1]->suit, table[1]->value);
   draw_card(23, 10, table[2]->suit, table[2]->value);
+  clr_txt();
 
   //SECOND ROUND OF BETTING
   printf("Would you like to bet? amount: ");
@@ -232,6 +233,7 @@ void play_hand(Deck* deck, Player* player, Player* computer) {
   //DEALING THE TURN
   table[3] = deal_turn(deck);
   draw_card(33, 10, table[3]->suit, table[3]->value);
+  clr_txt();
 
   //THIRD ROUND OF BETTING
   printf("Would you like to bet? amount: ");
@@ -270,7 +272,8 @@ void play_hand(Deck* deck, Player* player, Player* computer) {
   table[4] = deal_river(deck);
 
   draw_card(43, 10, table[4]->suit, table[4]->value);
-  
+  clr_txt();
+
   set_hand(player, table); // find the best hand for the player and the computer
   set_hand(computer, table);
 
@@ -307,6 +310,11 @@ void play_hand(Deck* deck, Player* player, Player* computer) {
     free(response);
   }
 
+  clr_txt();
+
+  draw_card(17, 2, computer->pocket[0]->suit, computer->pocket[0]->value);
+  draw_card(27, 2, computer->pocket[1]->suit, computer->pocket[1]->value);
+
   Player* winner = compare_hands(player, computer); // decide the winner!
   if (winner == player){
     printf("player wins\n");
@@ -319,11 +327,6 @@ void play_hand(Deck* deck, Player* player, Player* computer) {
     player->balance+=pool/2;
     computer->balance+=pool/2;
   }
-
-  draw_card(17, 2, computer->pocket[0]->suit, computer->pocket[0]->value);
-  draw_card(27, 2, computer->pocket[1]->suit, computer->pocket[1]->value);
-
-
 }
 
 int main() {
@@ -339,7 +342,7 @@ int main() {
   char* play = (char*) malloc(sizeof(char)*3);
   while (1) {
     clr();
-    printf("\e[30;0f");
+    set_crsr_home(0, 27);
     play_hand(deck, player, computer);
     printf("Player balance: %d\nComputer balance: %d\n", player->balance, computer->balance);
     printf("Another hand (yes or no)?: ");
