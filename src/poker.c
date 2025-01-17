@@ -94,7 +94,11 @@ Player* compare_hands(Player* playerA, Player* playerB)
     else { 
       if (check_multi(playerA->hand)[0] > check_multi(playerB->hand)[0]) return playerA;
       else if (check_multi(playerA->hand)[0] < check_multi(playerB->hand)[0]) return playerB;
-      else return NULL; // its actually a tie
+      else {
+        if (check_highest(playerA->pocket, POCKET_SIZE) > check_highest(playerB->pocket, POCKET_SIZE)) return playerA;
+        else if (check_highest(playerA->pocket, POCKET_SIZE) < check_highest(playerB->pocket, POCKET_SIZE)) return playerB;
+        else return NULL;
+      }
     }
   }
 }
